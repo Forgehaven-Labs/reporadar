@@ -1,0 +1,19 @@
+{
+  "name": "reporadar",
+  "version": "0.1.0",
+  "description": "Scan any git repo, score its health green/yellow/red across 7 dimensions, and get a Claude-ready fix plan. Zero dependencies.",
+  "type": "module",
+  "bin": {
+    "reporadar": "bin/reporadar.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/reporadar.js scan demo/sample-repo --html out/demo.html --json out/demo.json --claude out/demo-fixes.md",
+    "start": "node bin/reporadar.js"
+  },
+  "keywords": ["repo-health", "claude-code", "code-quality", "audit", "dashboard", "ci", "developer-tools"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
