@@ -111,7 +111,7 @@ function checkDocs(repo) {
   let score = 0;
   const readmePath = firstExisting(repo, ['README.md', 'README.rst', 'README.txt', 'readme.md']);
   if (readmePath) {
-    const body = read(join(repo, basename(readmePath))) || read(readmePath) || '';
+    const body = read(join(repo, readmePath)) || '';
     const len = body.length;
     if (len > 1500) { score += 50; findings.push({ level: 'ok', msg: `README is substantial (${len} chars)` }); }
     else if (len > 300) { score += 30; findings.push({ level: 'warn', msg: `README is thin (${len} chars)` }); fixes.push('Expand the README: what it is, install, usage, and an example.'); }
