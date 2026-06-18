@@ -70,6 +70,14 @@ function main() {
     if (opts.html) write(opts.html, renderHTML(result));
     if (opts.json) write(opts.json, JSON.stringify(result, null, 2));
     if (opts.claude) write(opts.claude, renderClaude(result));
+    // Freemium boundary marker (NOT payment logic): in a free build the toolkit
+    // still runs every feature; it only prints a one-line upgrade pointer when
+    // the Pro fix-plan / dashboard flags are used. The paid download leaves
+    // REPORADAR_EDITION unset and prints nothing extra. See MONETIZATION.md.
+    if (process.env.REPORADAR_EDITION === 'free' && (opts.claude || opts.html)) {
+      console.log('\n  RepoRadar Free — the scan + grade are yours forever.');
+      console.log('  Unlock the full fix plan, dashboard, and portfolio mode: https://reporadar.dev');
+    }
     process.exit(result.status === 'red' ? 2 : 0);
   }
 

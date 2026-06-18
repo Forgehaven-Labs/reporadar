@@ -27,16 +27,20 @@ The portfolio mode turns it into a manager's view: rank every repo you own worst
 
 ## Install
 
-No dependencies. Node 18+.
+No dependencies. No `npm install`. Just **Node 18+**.
+
+If you downloaded the release zip:
 
 ```bash
-git clone <this-repo> && cd reporadar
-# run directly:
+unzip reporadar-*.zip && cd reporadar
+# run directly — nothing to install:
 node bin/reporadar.js scan .
-# or link it as a global command:
+# or link it as a global `reporadar` command:
 npm link
 reporadar scan .
 ```
+
+Cloning from source works the same way: `node bin/reporadar.js scan .`
 
 ## Usage
 
@@ -70,6 +74,16 @@ Exit codes: `0` healthy/warning, `2` red (critical) — wire it into CI to fail 
 
 Each dimension scores 0–100; the overall grade (A–F) is the weighted average.
 
+## Free vs Pro
+
+RepoRadar is freemium. The **free** path is the live scan and the A-F grade for
+any repo — the "is this healthy?" answer. The **Pro** download ($39 one-time)
+adds the HTML dashboard, JSON export, portfolio mode, and the Claude Code
+fix-plan generator (the part that actually fixes the repo), plus updates.
+
+This download is the full toolkit — every feature runs, nothing is crippled.
+See `MONETIZATION.md` for the model and where the free/paid boundary lives.
+
 ## The Claude fix plan — the differentiator
 
 `--claude FIXES.md` writes a prioritized, agent-ready remediation plan: P0 secret findings first, then reds, then yellows, with guardrails ("never commit secrets", "commit at each checkpoint", "re-run reporadar to confirm the grade improved"). Paste it into Claude Code and the repo fixes itself.
@@ -87,7 +101,7 @@ npm test              # runs the test suite
 - Secret detection is pattern-based (high-signal patterns); it is not a replacement for a dedicated scanner like gitleaks.
 - Stack-specific depth (e.g. real `npm audit` CVEs) is on the roadmap, not in v0.1.
 
-See `../NEXT_BUILD_ACTIONS.md` for what ships next.
+See `CHANGELOG.md` for release history and what ships next.
 
 ## License
 
