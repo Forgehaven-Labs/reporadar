@@ -52,6 +52,10 @@ INCLUDE=(
   "LICENSE"
   "MONETIZATION.md"
   "package.json"
+  "package-lock.json"
+  ".reporadarignore"
+  "eslint.config.js"
+  ".editorconfig"
 )
 
 mkdir -p "$STAGE"

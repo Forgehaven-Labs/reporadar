@@ -1,0 +1,7 @@
+# Paths RepoRadar excludes from its OWN health scan (gitignore-style).
+#
+# demo/ holds intentionally-imperfect fixtures with SYNTHETIC secrets, used to
+# exercise the scanner. They are not part of RepoRadar's source, so they must not
+# count against RepoRadar's own grade. `npm run demo` scans demo/sample-repo as its
+# own root (where this file does not apply), so the proof report still flags them.
+demo/

@@ -60,6 +60,17 @@ reporadar scan . --verbose
 
 Exit codes: `0` healthy/warning, `2` red (critical) — wire it into CI to fail a build that regresses.
 
+### Excluding paths (`.reporadarignore`)
+
+Drop a `.reporadarignore` at the repo root to keep vendored code, generated output, or test fixtures out of the scan (gitignore-style: bare names match a segment at any depth, `path/` is anchored to the root, `*`/`**` globs work). This is opt-in per repo, so it never weakens secret detection for a repo that has no ignore file:
+
+```
+# .reporadarignore
+demo/
+vendor/
+**/__fixtures__
+```
+
 ## The 7 dimensions
 
 | Dimension | Weight | What it checks |

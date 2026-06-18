@@ -44,6 +44,29 @@ test('scanRepo flags a hardcoded secret as red security', () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+test('.reporadarignore excludes a fixture path from the secret scan', () => {
+  const dir = makeRepo({
+    'package.json': '{"name":"x"}',
+    'fixtures/leak.js': 'const k = "sk-ant-' + 'A'.repeat(30) + '";',
+    '.reporadarignore': '# fixtures carry synthetic secrets\nfixtures/\n',
+  });
+  const result = scanRepo(dir);
+  const sec = result.dimensions.find((d) => d.key === 'secrets');
+  assert.equal(sec.status, 'green', 'an ignored fixture secret must not count against the grade');
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('without .reporadarignore the same fixture secret is still flagged (detection intact)', () => {
+  const dir = makeRepo({
+    'package.json': '{"name":"x"}',
+    'fixtures/leak.js': 'const k = "sk-ant-' + 'A'.repeat(30) + '";',
+  });
+  const result = scanRepo(dir);
+  const sec = result.dimensions.find((d) => d.key === 'secrets');
+  assert.equal(sec.status, 'red', 'a secret in a non-ignored path must still be caught');
+  rmSync(dir, { recursive: true, force: true });
+});
+
 test('scanRepo rewards a well-formed repo', () => {
   const longReadme = '# Project\n\n' + '## Install\nrun it.\n## Usage\n' + 'x'.repeat(1600);
   const dir = makeRepo({
