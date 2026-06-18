@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RepoRadar · Scan any repo. Get a health grade and a Claude-ready fix plan.</title>
+  <meta name="description" content="RepoRadar is a zero-dependency CLI that grades any git repo A to F across 7 dimensions and writes a prioritized fix plan you paste straight into Claude Code. Static-only and safe to run on untrusted code." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="RepoRadar · repo health grade + a Claude-ready fix plan" />
+  <meta property="og:description" content="Grade any git repo A to F in seconds, then let Claude Code fix it. Zero dependencies. Safe on untrusted code." />
+  <meta property="og:url" content="https://reporadar.dev" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ambient radar grid backdrop -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="RepoRadar home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".55"/>
+          <circle cx="16" cy="16" r="3.5" fill="currentColor"/>
+          <path d="M16 16 L16 2" stroke="currentColor" stroke-width="1.5" class="brand-sweep"/>
+        </svg>
+      </span>
+      <span class="brand-name">RepoRadar</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#what">What it does</a>
+      <a href="#who">Who it's for</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a class="nav-cta" href="LEMONSQUEEZY_CHECKOUT_URL">Get RepoRadar</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- ===================== HERO ===================== -->
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot-live"></span> v0.1 · zero dependencies · safe on untrusted code</span>
+        <h1>Scan any repo.<br />Get a <span class="grade-a">grade</span> and a<br /><span class="hl">Claude-ready fix plan.</span></h1>
+        <p class="lede">
+          RepoRadar reads a git repository and scores its health <strong>A to F</strong> across
+          seven dimensions, then writes a prioritized remediation plan you paste straight
+          into Claude Code. Diagnosis to fix, in one move. No build runs, so it is fast and
+          safe to point at code you do not trust.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="LEMONSQUEEZY_CHECKOUT_URL">
+            Get RepoRadar · $39
+            <span class="btn-sub">one-time · lifetime updates</span>
+          </a>
+          <a class="btn btn-ghost" href="#sample">See a real report ↓</a>
+        </div>
+        <div class="trust-row">
+          <span>Node 18+</span><i></i><span>No npm install</span><i></i><span>MIT licensed</span><i></i><span>Works offline</span>
+        </div>
+      </div>
+
+      <!-- live-feeling terminal sample -->
+      <div class="hero-term" id="sample">
+        <div class="term-bar">
+          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+          <span class="term-title">reporadar scan ./acme-widget-api</span>
+        </div>
+        <pre class="term-body" aria-label="Example RepoRadar terminal output"><span class="c-dim">$</span> <span class="c-cyan">reporadar</span> scan ./acme-widget-api
+
+<span class="c-bold c-cyan">RepoRadar</span> <span class="c-dim">— health report</span>
+<span class="c-bold">acme-widget-api</span> <span class="c-dim">(Node/JS)</span>
+
+  <span class="c-bold">Overall</span>  <span class="c-red c-bold">F</span>  <span class="c-red">███</span><span class="c-dim">░░░░░░░░░░░░░░░░░░░░░</span>  <span class="c-red">11/100</span>
+
+  Tests                <span class="c-dim">░░░░░░░░░░░░░░░░░░░░</span> <span class="c-red">  0</span>
+      <span class="c-red">✗</span> <span class="c-dim">No real `test` script in package.json</span>
+  Security / Secrets   <span class="c-dim">░░░░░░░░░░░░░░░░░░░░</span> <span class="c-red">  0</span>
+      <span class="c-red">✗</span> <span class="c-dim">Possible Anthropic API key in src/index.js</span>
+  Documentation        <span class="c-red">██</span><span class="c-dim">░░░░░░░░░░░░░░░░░░</span> <span class="c-red"> 10</span>
+  Dependencies         <span class="c-red">█████</span><span class="c-dim">░░░░░░░░░░░░░░░</span> <span class="c-red"> 25</span>
+  CI / Automation      <span class="c-dim">░░░░░░░░░░░░░░░░░░░░</span> <span class="c-red">  0</span>
+  Git Hygiene          <span class="c-red">████</span><span class="c-dim">░░░░░░░░░░░░░░░░</span> <span class="c-red"> 20</span>
+  Build / Lint Config  <span class="c-yellow">███████</span><span class="c-dim">░░░░░░░░░░░░░</span> <span class="c-yellow"> 35</span>
+
+  <span class="c-bold">Top fixes</span> <span class="c-dim">(13 total)</span>
+    <span class="c-yellow">→</span> Rotate the Anthropic API key in src/index.js <span class="c-dim">(P0)</span>
+    <span class="c-yellow">→</span> Add a real `test` script to package.json
+    <span class="c-yellow">→</span> Add a CI workflow that builds and tests on push</pre>
+      </div>
+    </section>
+
+    <!-- ===================== LOGOS / PROOF STRIP ===================== -->
+    <section class="strip">
+      <p>One number every developer, agency, and engineering manager wants:
+        <strong>is this repo in good shape?</strong> RepoRadar answers it, shows the
+        evidence, and hands the fix to an AI agent.</p>
+    </section>
+
+    <!-- ===================== WHAT IT DOES ===================== -->
+    <section id="what" class="block">
+      <div class="block-head">
+        <span class="kicker">// what it does</span>
+        <h2>Three artifacts from a single scan.</h2>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="card-ico" aria-hidden="true">▸</div>
+          <h3>Grades it A to F</h3>
+          <p>Seven weighted dimensions (tests, secrets, docs, dependencies, CI, git hygiene, build config) collapse into one honest letter grade with a per-dimension breakdown.</p>
+        </article>
+        <article class="card card-feature">
+          <div class="card-ico" aria-hidden="true">✦</div>
+          <h3>Writes a Claude fix plan</h3>
+          <p>The differentiator. A prioritized, agent-ready plan: P0 secrets first, then reds, then yellows, with guardrails. Paste it into Claude Code and the repo fixes itself.</p>
+          <span class="tag-pro">the part nobody else ships</span>
+        </article>
+        <article class="card">
+          <div class="card-ico" aria-hidden="true">◳</div>
+          <h3>Ranks your whole portfolio</h3>
+          <p>Point it at a folder of repos and get a manager's view: every project ranked worst-first, so you see exactly where the technical debt and the leaking secrets are.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== SAMPLE GRADE VISUAL ===================== -->
+    <section class="block sample-block">
+      <div class="block-head">
+        <span class="kicker">// the dashboard</span>
+        <h2>A self-contained HTML report, no server required.</h2>
+        <p class="block-sub">Every scan can also write a standalone dashboard and a machine-readable JSON. Here is the same <code>acme-widget-api</code> result, rendered.</p>
+      </div>
+
+      <div class="dash">
+        <div class="dash-hero">
+          <!-- radar gauge, mirrors the real SVG gauge -->
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 160 160" class="gauge" aria-label="Health gauge: 11 out of 100">
+              <circle cx="80" cy="80" r="66" fill="none" stroke="#23262e" stroke-width="12"/>
+              <circle class="gauge-fill" cx="80" cy="80" r="66" fill="none" stroke="var(--red)" stroke-width="12"
+                stroke-linecap="round" stroke-dasharray="414.7" stroke-dashoffset="369.1"
+                transform="rotate(-90 80 80)"/>
+              <text x="50%" y="46%" text-anchor="middle" class="gauge-num">11</text>
+              <text x="50%" y="62%" text-anchor="middle" class="gauge-sub">/ 100</text>
+            </svg>
+          </div>
+          <div class="dash-meta">
+            <div class="dash-grade">F</div>
+            <h3>acme-widget-api</h3>
+            <div class="dash-stack">Node/JS</div>
+            <div class="dash-pills">
+              <span class="pill">🟢 0 healthy</span>
+              <span class="pill">🟡 0 warning</span>
+              <span class="pill">🔴 7 critical</span>
+              <span class="pill">13 fixes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">Tests</span><span class="dim-score red">0</span></div><div class="dim-track"><i style="width:2%;background:var(--red)"></i></div></div>
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">Security / Secrets</span><span class="dim-score red">0</span></div><div class="dim-track"><i style="width:2%;background:var(--red)"></i></div></div>
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">Documentation</span><span class="dim-score red">10</span></div><div class="dim-track"><i style="width:10%;background:var(--red)"></i></div></div>
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">Dependencies</span><span class="dim-score red">25</span></div><div class="dim-track"><i style="width:25%;background:var(--red)"></i></div></div>
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">CI / Automation</span><span class="dim-score red">0</span></div><div class="dim-track"><i style="width:2%;background:var(--red)"></i></div></div>
+          <div class="dim"><div class="dim-top"><span class="ddot red"></span><span class="dim-name">Build / Lint Config</span><span class="dim-score yellow">35</span></div><div class="dim-track"><i style="width:35%;background:var(--yellow)"></i></div></div>
+        </div>
+
+        <div class="dash-fixes">
+          <div class="fixes-label">Prioritized fix plan</div>
+          <ol>
+            <li><span class="fx-p0">[Security / Secrets]</span> Rotate and remove the Anthropic API key in <code>src/index.js</code>; load it from an env var instead.</li>
+            <li><span class="fx-dim">[Tests]</span> Add a real <code>test</code> script and a smoke test for the entry point.</li>
+            <li><span class="fx-dim">[CI / Automation]</span> Add a CI workflow that builds and tests on every push.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== WHO IT'S FOR ===================== -->
+    <section id="who" class="block">
+      <div class="block-head">
+        <span class="kicker">// who it's for</span>
+        <h2>Built for the people who inherit other people's code.</h2>
+      </div>
+      <div class="who-grid">
+        <div class="who"><h3>Solo devs &amp; indie hackers</h3><p>Before you ship a side project or buy a repo, get an honest grade and a punch list you can clear in an afternoon with Claude.</p></div>
+        <div class="who"><h3>Agencies &amp; consultants</h3><p>Audit a client codebase in seconds. Hand them a dashboard with a grade and a fix plan: billable, repeatable, and it looks sharp.</p></div>
+        <div class="who"><h3>Engineering managers</h3><p>Portfolio mode ranks every repo worst-first. See which projects leak secrets, ship no tests, or have no CI, without opening a single file.</p></div>
+        <div class="who"><h3>Anyone wiring CI gates</h3><p>Exit code 2 on a red repo. Drop <code>reporadar scan .</code> into a pipeline and fail the build before the debt lands on main.</p></div>
+      </div>
+    </section>
+
+    <!-- ===================== PRICING ===================== -->
+    <section id="pricing" class="block pricing-block">
+      <div class="block-head center">
+        <span class="kicker">// pricing</span>
+        <h2>Free to scan. Pay once for the fix.</h2>
+        <p class="block-sub">No subscription. No account. The grade is always free. The toolkit that fixes the repo is a one-time purchase.</p>
+      </div>
+      <div class="price-grid">
+        <div class="price-card">
+          <div class="price-tier">Free</div>
+          <div class="price-amount">$0</div>
+          <p class="price-note">The honest answer, forever.</p>
+          <ul class="price-list">
+            <li><span class="ck">✓</span> Live terminal scan of any repo</li>
+            <li><span class="ck">✓</span> The A–F grade + per-dimension breakdown</li>
+            <li><span class="ck">✓</span> Static-only, safe on untrusted code</li>
+            <li class="muted"><span class="ck off">·</span> HTML dashboard &amp; JSON export</li>
+            <li class="muted"><span class="ck off">·</span> Claude fix-plan generator</li>
+            <li class="muted"><span class="ck off">·</span> Portfolio mode</li>
+          </ul>
+          <a class="btn btn-ghost full" href="https://github.com">Clone &amp; scan</a>
+        </div>
+
+        <div class="price-card featured">
+          <div class="ribbon">Most popular</div>
+          <div class="price-tier">RepoRadar Pro</div>
+          <div class="price-amount">$39 <span class="price-strike">$49</span></div>
+          <p class="price-note">One-time. Lifetime updates.</p>
+          <ul class="price-list">
+            <li><span class="ck">✓</span> <strong>Everything in Free</strong></li>
+            <li><span class="ck">✓</span> Self-contained HTML dashboard</li>
+            <li><span class="ck">✓</span> Machine-readable JSON for CI</li>
+            <li><span class="ck">✓</span> <strong>Claude Code fix-plan generator</strong></li>
+            <li><span class="ck">✓</span> Portfolio mode (rank every repo)</li>
+            <li><span class="ck">✓</span> All future v0.x updates</li>
+          </ul>
+          <a class="btn btn-primary full" href="LEMONSQUEEZY_CHECKOUT_URL">Get RepoRadar Pro</a>
+          <p class="price-fine">Instant download · 14-day refund</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section id="faq" class="block">
+      <div class="block-head center">
+        <span class="kicker">// faq</span>
+        <h2>Questions, answered.</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Is it safe to run on code I don't trust?</summary>
+          <p>Yes. RepoRadar is static-only by default. It reads config and files but never executes your build, install, or test scripts. There is no arbitrary code path. That is the whole point.</p>
+        </details>
+        <details>
+          <summary>Do I need to install anything?</summary>
+          <p>Just Node 18 or newer. RepoRadar has zero npm dependencies; it runs straight from source on Node built-ins. No <code>npm install</code>, no lockfile, no supply chain.</p>
+        </details>
+        <details>
+          <summary>What exactly is the "Claude fix plan"?</summary>
+          <p>A Markdown file you generate with <code>--claude FIXES.md</code>. It lists every finding as a prioritized, agent-ready task (P0 secrets first) with guardrails like "never commit secrets" and "commit at each checkpoint." Paste it into Claude Code and the repo remediates itself.</p>
+        </details>
+        <details>
+          <summary>How accurate is the secret detection?</summary>
+          <p>It is high-signal pattern matching for AWS keys, private key blocks, OpenAI/Anthropic/GitHub/Google/Slack tokens, hardcoded credentials, and committed <code>.env</code> files. It is a fast first line of defense, not a replacement for a dedicated scanner like gitleaks, and we say so plainly.</p>
+        </details>
+        <details>
+          <summary>What does the grade actually measure?</summary>
+          <p>A weighted average of seven dimensions: Tests (20), Security/Secrets (18), Documentation (15), Dependencies (15), CI/Automation (12), Git Hygiene (10), Build/Lint Config (10). Because it is static, "Tests" measures whether tests <em>exist</em>, not whether they pass.</p>
+        </details>
+        <details>
+          <summary>Is it really a one-time purchase?</summary>
+          <p>Yes. Pay $39 once, get the full toolkit and every v0.x update. No subscription, no per-scan fee, no account. The free terminal scan stays free for everyone.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== FINAL CTA ===================== -->
+    <section class="final-cta">
+      <div class="final-inner">
+        <span class="kicker">// stop guessing</span>
+        <h2>Know your repo's grade in <span class="hl">ten seconds.</span></h2>
+        <p>Then let Claude clear the fix plan. Diagnosis to remediation, one move.</p>
+        <a class="btn btn-primary big" href="LEMONSQUEEZY_CHECKOUT_URL">Get RepoRadar · $39</a>
+        <p class="final-fine">One-time payment · instant download · 14-day money-back guarantee</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-brand"><span class="brand-name">RepoRadar</span><span class="foot-dim">static analysis · no code executed</span></div>
+    <div class="foot-links">
+      <a href="#what">What it does</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="LEMONSQUEEZY_CHECKOUT_URL">Buy</a>
+    </div>
+    <div class="foot-legal">© 2026 Forgehaven Labs LLC · MIT licensed</div>
+  </footer>
+</body>
+</html>
