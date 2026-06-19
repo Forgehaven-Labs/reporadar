@@ -18,6 +18,7 @@ Options:
   --html <file>     Write an HTML dashboard
   --json <file>     Write raw JSON results
   --claude <file>   Write a Claude Code fix plan (single-repo scan only)
+  --brand <name>    White-label the HTML report with your name (Team license)
   --verbose         Show every finding in the terminal
   -h, --help        Show this help
 
@@ -67,7 +68,7 @@ function main() {
     if (!target) { console.error('error: scan requires a <path>'); process.exit(1); }
     const result = scanRepo(resolve(target));
     console.log(renderTerminal(result, { verbose: opts.verbose }));
-    if (opts.html) write(opts.html, renderHTML(result));
+    if (opts.html) write(opts.html, renderHTML(result, { brand: opts.brand }));
     if (opts.json) write(opts.json, JSON.stringify(result, null, 2));
     if (opts.claude) write(opts.claude, renderClaude(result));
     // Freemium boundary marker (NOT payment logic): in a free build the toolkit
@@ -95,7 +96,7 @@ function main() {
       catch (e) { console.error(`  skipped ${d}: ${e.message}`); }
     }
     console.log(renderPortfolioTerminal(results));
-    if (opts.html) write(opts.html, renderPortfolioHTML(results));
+    if (opts.html) write(opts.html, renderPortfolioHTML(results, { brand: opts.brand }));
     if (opts.json) write(opts.json, JSON.stringify(results, null, 2));
     process.exit(0);
   }

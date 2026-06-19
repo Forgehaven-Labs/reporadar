@@ -1,11 +1,44 @@
 # Monetization model — RepoRadar
 
-**Recommendation: Freemium, tiered by distribution — free live scan + grade, paid full toolkit.**
-**Price: one-time $39 (launch: $29). No subscription.**
+**Recommendation: Freemium, tiered by distribution — free live scan + grade, paid full toolkit, agency tier for client work.**
+**Price: free scan, Pro $39, Team/Agency $149. All one-time, no subscription.**
 
 This document is the decision record for how RepoRadar makes money and how the
 packaging reflects that decision. It does **not** implement payment logic; it
 defines the free/paid boundary and where it lives.
+
+---
+
+## Price justification — the right yardstick
+
+Price tracks **what the outcome is worth to the buyer**, not how many hours it took to
+build. The correct anchor for each tier:
+
+- **Pro ($39).** The buyer is a solo dev or small team. The outcome it delivers: it turns
+  "I should really audit this repo" into a finished audit **plus a prioritized,
+  Claude-ready fix plan in under a minute** — work that by hand is a 2-to-4 hour afternoon
+  of checking tests, secrets, CI, and docs and then writing up a plan. At even a modest
+  hourly rate that is $80–$160 of time, recovered the first time it catches a leaked key
+  or a repo with no tests, and then reused across **every repo you own, forever**. Against
+  one saved afternoon, $39 one-time is an easy yes.
+
+- **Team / Agency ($149).** The buyer is a consultant or agency that audits **client**
+  repos as billable work, or a lead managing many repos. Here the value is **repeatable and
+  revenue-generating**, which is why it is priced at ~4x Pro even though the buyer's value
+  is more like 10–50x:
+  - Each client audit it replaces is a half-day of billable time ($300–$800). RepoRadar
+    produces the same result in seconds, and the **marginal cost of the next audit is zero**.
+  - The **white-label report** (`--brand "Your Agency"`) is a client-ready deliverable with
+    the agency's name on it, not ours — a line item they can charge for, not just an
+    internal tool.
+  - The commercial license + 10 seats remove the licensing friction of using it on paid
+    client work across a team.
+  - The yardstick: **one client audit it replaces, or one branded report it lets you bill,
+    covers the $149 several times over.** After that it is pure margin.
+
+The same yardstick says **don't discount**: a price-sensitive buyer who balks at $39 leaves
+for free tools regardless, while the agency buyer judges on billable value and a cheap price
+reads as "not serious." The growth lever is proof and a strong free tier, not a lower number.
 
 ---
 
@@ -26,7 +59,8 @@ crippled-runtime freemium:
 | Tier | What the user gets | Where it lives |
 |---|---|---|
 | **Free** | The live terminal scan + the A-F grade for any repo. The "is this repo healthy?" answer, shareable. | The landing page hook + a published free `scan` path |
-| **Paid ($39)** | The full downloadable toolkit: HTML dashboard, JSON export, **portfolio mode**, and the **Claude Code fix-plan generator** — plus version updates. | The Lemon Squeezy download |
+| **Pro ($39)** | The full downloadable toolkit: HTML dashboard, JSON export, **portfolio mode**, and the **Claude Code fix-plan generator** — plus version updates. | The Lemon Squeezy download |
+| **Team / Agency ($149)** | Everything in Pro, plus a **commercial license** to scan client repos, **white-label HTML reports** (`--brand`), **up to 10 seats**, and priority support. | The Lemon Squeezy download (separate product) |
 
 ### Why freemium beats flat-paid here
 
@@ -90,8 +124,9 @@ The boundary is a clean, documented **delineation**, not enforced payment code:
 
 - That developers will pay ~$39 one-time for the fix-plan + dashboard rather
   than copy the free scan output by hand. (Validate with launch conversion.)
-- That agencies value portfolio mode enough to anchor a higher future "team"
-  price. (Possible future tier; not at launch.)
+- That agencies value the white-label report + commercial license enough to pay
+  $149 (4x Pro). The Team/Agency tier now ships; validate its conversion against Pro
+  and confirm 10 seats + commercial terms match what agencies actually need.
 - That a free hosted scan funnel is worth building. At launch the free tier can
   simply be "clone the repo and run `scan`" + the landing-page sample; a hosted
   free scan is a fast-follow if the funnel converts.

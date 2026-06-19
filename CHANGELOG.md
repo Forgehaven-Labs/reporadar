@@ -4,6 +4,18 @@ All notable changes to RepoRadar are documented here.
 This project follows [Semantic Versioning](https://semver.org/) and the
 [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [Unreleased]
+
+### Added
+- **`.reporadarignore`** (gitignore-style) so a repo can exclude vendored code or
+  fixtures from the scan. Opt-in per repo, so default secret detection is unchanged.
+  RepoRadar uses it to exclude its own `demo/` fixtures (self-grade D to B+).
+- **White-label HTML reports** via `--brand "Your Agency"`: the report header, title,
+  and footer carry the agency's name, not RepoRadar's. XSS-safe (brand is escaped).
+- **Team / Agency tier ($149)**: commercial license to scan client repos, white-label
+  reports, up to 10 seats, priority support.
+- A lockfile, `eslint.config.js`, and `.editorconfig` for the project's own hygiene.
+
 ## [0.1.0] - 2026-06-18
 
 First public release. RepoRadar scans a git repository (or a folder of them),

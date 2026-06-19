@@ -85,15 +85,19 @@ vendor/
 
 Each dimension scores 0–100; the overall grade (A–F) is the weighted average.
 
-## Free vs Pro
+## Free vs Pro vs Team
 
 RepoRadar is freemium. The **free** path is the live scan and the A-F grade for
 any repo — the "is this healthy?" answer. The **Pro** download ($39 one-time)
 adds the HTML dashboard, JSON export, portfolio mode, and the Claude Code
-fix-plan generator (the part that actually fixes the repo), plus updates.
+fix-plan generator (the part that actually fixes the repo), plus updates. The
+**Team / Agency** tier ($149 one-time) adds a commercial license to scan client
+repos, white-label HTML reports (`--brand "Your Agency"`), up to 10 seats, and
+priority support.
 
-This download is the full toolkit — every feature runs, nothing is crippled.
-See `MONETIZATION.md` for the model and where the free/paid boundary lives.
+Every download is the full toolkit — every feature runs, nothing is crippled.
+The tiers are licensing and white-labeling, not crippled code. See
+`MONETIZATION.md` for the model and where the free/paid boundary lives.
 
 ## The Claude fix plan — the differentiator
 

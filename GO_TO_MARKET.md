@@ -4,7 +4,7 @@ Everything needed to list and sell RepoRadar as a downloadable digital product,
 short of creating the payment account itself. Pair this with `MONETIZATION.md`
 (the model) and `scripts/package.sh` (the artifact builder).
 
-**Recommended price: $39 one-time (launch price $29 for the first ~50 buyers).**
+**Recommended price: Pro $39 one-time (launch $29 for the first ~50 buyers) + a Team/Agency tier at $149 (commercial license, white-label reports, 10 seats).**
 See the reasoning at the end.
 
 ---
@@ -75,9 +75,18 @@ Before every listing update, rebuild the artifact so the version is current:
    sed -i '' 's|LEMONSQUEEZY_CHECKOUT_URL|https://YOURSTORE.lemonsqueezy.com/checkout/buy/UUID|g' landing/index.html
    ```
 
-   There are 5 placeholders (nav button, hero CTA, the Pro pricing button, the
-   final CTA, and the footer "Buy" link). Re-open the page locally and click each
-   to confirm it lands on checkout.
+   There are 5 `LEMONSQUEEZY_CHECKOUT_URL` placeholders (nav button, hero CTA, the
+   Pro pricing button, the final CTA, and the footer "Buy" link). Re-open the page
+   locally and click each to confirm it lands on checkout.
+
+   **The Team/Agency tier is a separate Lemon Squeezy product.** Create a second
+   product ("RepoRadar Team / Agency", price `14900`, same zip), then wire its
+   checkout into the one `LEMONSQUEEZY_TEAM_CHECKOUT_URL` placeholder (the Team
+   pricing button):
+
+   ```bash
+   sed -i '' 's|LEMONSQUEEZY_TEAM_CHECKOUT_URL|https://YOURSTORE.lemonsqueezy.com/checkout/buy/TEAM_UUID|g' landing/index.html
+   ```
 
 9. **Host the landing page**: it is fully static (`index.html` + `styles.css` +
    `favicon.svg`). Drop the `landing/` folder on Netlify, Cloudflare Pages, GitHub
@@ -112,30 +121,33 @@ Before every listing update, rebuild the artifact so the version is current:
    Engineering agencies and freelance "rescue this codebase" consultants get
    instant value from portfolio mode and a client-ready dashboard. DM or email a
    short list with a free audit of one of their public repos attached as the
-   dashboard HTML. The ask: "$39 once and you can run this on every client repo
-   and hand them the report." This segment is least price-sensitive and seeds the
-   future "team" tier.
+   dashboard HTML. The ask: "$149 for the Team license and you can run this on every
+   client repo and hand them a report with your own name on it." This is the least
+   price-sensitive segment, and the Team/Agency tier is built for it.
 
 ---
 
 ## 3. Recommended price (and why)
 
-**Launch at $29, settle at $39, one-time. No subscription.**
+**Free scan, Pro $39, Team/Agency $149. All one-time, no subscription.** Launch Pro at
+$29 for the first ~50 buyers, then settle at $39.
 
-- **One-time fits the value profile.** A repo scan is a finite job with no
-  recurring server cost. A subscription would create churn for a tool people
-  reach for occasionally; one-time removes friction and matches buyer expectation
-  for a downloadable CLI.
-- **$39 anchors against the alternative.** The comparison is not other $5 CLIs;
-  it is the hour a developer or agency spends manually auditing a repo and writing
-  a remediation list. RepoRadar does that in seconds and writes the fix plan for
-  an AI agent. $39 is an easy yes against an hour of engineer time.
-- **$29 launch price** lowers the bar for the first wave of buyers and reviews,
-  which are worth more than the $10 difference early on. Move to $39 once you have
-  a handful of testimonials and the demo video.
-- **Headroom above this:** a future **"Team / Agency" tier (~$149)** for orgs that
-  want to standardize on portfolio mode is a natural fast-follow once the single
-  price is validated. Do not launch it day one; validate the $39 first.
+- **One-time fits the value profile.** A repo scan is a finite job with no recurring
+  server cost. A subscription would create churn for a tool people reach for
+  occasionally; one-time removes friction and matches buyer expectation for a
+  downloadable CLI.
+- **Price against the outcome, not the build hours.** Pro replaces a 2-to-4 hour manual
+  audit ($80–$160 of time) and then pays off again on every repo you own. Team replaces
+  a half-day billable client audit ($300–$800), and its white-label report is a
+  deliverable an agency can bill for, so a single engagement covers the $149 several
+  times. The yardstick is what the buyer's outcome is worth, not "an hour of engineer
+  time."
+- **$29 launch price** lowers the bar for the first wave of buyers and reviews, which are
+  worth more than the $10 difference early on. Move to $39 once you have a handful of
+  testimonials and the demo video.
+- **Don't discount to chase price-sensitive buyers.** They leave for free tools at any
+  price, while the agency buyer judges on billable value and a cheap price reads as "not
+  serious." Lead with proof and the free tier, not a lower number.
 
 Free tier stays free forever (the live scan + grade) — it is the funnel, not a
 line item.
