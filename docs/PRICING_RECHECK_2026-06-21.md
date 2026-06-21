@@ -1,4 +1,4 @@
-# Pricing-Comp Recheck — RepoRadar (2026-06-21)
+# Pricing-Comp Recheck - RepoRadar (2026-06-21)
 
 Recheck of live comparable prices against the current model. Researched via web search.
 This memo confirms or adjusts `../MONETIZATION.md`; it does not change prices on its own.

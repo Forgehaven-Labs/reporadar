@@ -1,4 +1,4 @@
-# RepoRadar — Launch Posts (draft)
+# RepoRadar - Launch Posts (draft)
 
 > Draft copy for launch day. No em-dashes in public-facing copy.
 > [YOU] Replace `PLACEHOLDER_LANDING_URL` and the checkout URL before posting; swap the real
