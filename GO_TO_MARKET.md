@@ -26,76 +26,75 @@ Before every listing update, rebuild the artifact so the version is current:
 
 ---
 
-## 1. Lemon Squeezy listing — exact steps
+## 1. Stripe Payment Links listing — exact steps
 
-> Prerequisite (the one gated thing, do this yourself): create the Lemon Squeezy
-> account and a Store at <https://app.lemonsqueezy.com>. Everything below is the
-> per-product setup once a store exists.
+> **Rail change (2026-07-01):** Lemon Squeezy denied the store application on
+> 2026-06-30, so the payment rail is now **Stripe Payment Links** (the owner has a
+> Stripe account). Note the trade-off: Stripe is a payment processor, **not a
+> Merchant of Record** — enable **Stripe Tax** on the links to collect sales
+> tax/VAT, or fall back to **Gumroad** (flat 10%, MoR included) if tax handling
+> becomes a burden. Keep the same two products and prices either way.
 
-1. **Create the store** (if not done): Lemon Squeezy dashboard → *Stores* → set
-   store name (e.g. "Forgehaven Labs"), currency **USD**, and your support email.
-   Lemon Squeezy is the Merchant of Record, so it handles sales tax/VAT for you.
+1. **Create the two products** in the Stripe Dashboard → *Product catalog* →
+   **Add product** (one-time price, USD):
+   - `RepoRadar Pro — repo health grade + Claude fix plan` at `$29` launch
+     (planned `$39` list).
+   - `RepoRadar Team / Agency` at `$149`.
 
-2. **New product**: Dashboard → *Products* → **New Product**.
-   - **Name:** `RepoRadar — repo health grade + Claude fix plan`
-   - **Type:** *Single payment* (one-time), **not** subscription.
-   - **Price:** `2900` cents at launch (`$29`), planned to move to `$39`. Leave
-     "Pay what you want" off.
+2. **Create a Payment Link for each** (*Payment links* → New): select the product,
+   turn ON "Collect customers' addresses" and **Stripe Tax** if enabled, and set the
+   **confirmation page** message to: "Thanks! Your download link is below. Unzip and
+   run `node bin/reporadar.js scan .` — Node 18+, nothing to install. Reply to your
+   receipt email for support."
 
-3. **Deliver the files**: in the product editor, set **Fulfillment → Deliver a
-   file** and upload `dist/reporadar-<version>.zip`. (Re-upload on each release;
-   buyers can be emailed an updated download link from the *Orders* view.)
-   - Optionally add a license-key generator (Settings → License keys) if you want
-     keys for support/upgrade tracking. Not required for delivery.
+3. **Deliver the file.** Payment Links do not host files. Two easy options:
+   - **Post-payment redirect** (recommended): set the link's after-payment behavior
+     to redirect to a private download URL on the landing host (an unguessable path,
+     e.g. `/dl/<random>/reporadar-0.1.0.zip`). Rotate the path on each release.
+   - Or attach the zip via a fulfillment email tool later. Do not block launch on
+     automation; at launch volume, manually emailing the zip on each receipt is fine.
 
-4. **Description**: paste a tightened version of the landing copy — the hero line,
-   the 7 dimensions, the Claude fix-plan differentiator, and the "static-only,
-   safe on untrusted code" line. Add the system requirement: **Node 18+**.
+4. **Media / description parity**: keep the landing page as the sales surface (Stripe
+   product pages are minimal). Use `docs/screenshots/demo-dashboard.png` and
+   `docs/screenshots/portfolio-dashboard.png` on the landing; the Payment Link only
+   needs the correct name + price.
 
-5. **Media**: upload `docs/screenshots/demo-dashboard.png` and
-   `docs/screenshots/portfolio-dashboard.png` as product images, plus a crop of
-   the terminal output. These are the proof shots.
+5. **Refunds**: honor the landing's **14-day refund** promise manually from the
+   Stripe dashboard (Payments → Refund). No setting needed up front.
 
-6. **Checkout settings**:
-   - Enable **discount codes** and create `LAUNCH` for the intro price if you
-     prefer a code over a base-price change.
-   - Set the **receipt / confirmation message** to: "Thanks! Unzip and run
-     `node bin/reporadar.js scan .` — Node 18+, nothing to install. Reply to this
-     email for support." 
-   - Turn on the **14-day refund** policy (matches the landing-page promise).
-
-7. **Publish** → copy the product's **Checkout URL** (or a Buy Button / hosted
-   checkout link). It looks like `https://<store>.lemonsqueezy.com/checkout/buy/<uuid>`.
-
-8. **Wire the landing page**: replace every `LEMONSQUEEZY_CHECKOUT_URL`
-   placeholder in `landing/index.html` with that checkout URL:
+6. **Wire the landing page**: replace the two placeholders in `landing/index.html`
+   with the live Payment Link URLs (they look like `https://buy.stripe.com/<id>`):
 
    ```bash
-   # from the repo root, once you have the real URL:
-   sed -i '' 's|LEMONSQUEEZY_CHECKOUT_URL|https://YOURSTORE.lemonsqueezy.com/checkout/buy/UUID|g' landing/index.html
+   # from the repo root, once you have the real URLs:
+   sed -i '' 's|STRIPE_LINK_REPORADAR_PRO|https://buy.stripe.com/PRO_ID|g'  landing/index.html
+   sed -i '' 's|STRIPE_LINK_REPORADAR_TEAM|https://buy.stripe.com/TEAM_ID|g' landing/index.html
+   grep -c STRIPE_LINK landing/index.html   # expect 0 after replace
    ```
 
-   There are 5 `LEMONSQUEEZY_CHECKOUT_URL` placeholders (nav button, hero CTA, the
-   Pro pricing button, the final CTA, and the footer "Buy" link). Re-open the page
-   locally and click each to confirm it lands on checkout.
+   There are 5 `STRIPE_LINK_REPORADAR_PRO` placeholders (nav button, hero CTA, the
+   Pro pricing button, the final CTA, and the footer "Buy" link) and 1
+   `STRIPE_LINK_REPORADAR_TEAM` (the Team pricing button). Re-open the page locally
+   and click each to confirm it lands on checkout.
 
-   **The Team/Agency tier is a separate Lemon Squeezy product.** Create a second
-   product ("RepoRadar Team / Agency", price `14900`, same zip), then wire its
-   checkout into the one `LEMONSQUEEZY_TEAM_CHECKOUT_URL` placeholder (the Team
-   pricing button):
+   **The free tier needs no link work**: the "Clone & scan" button already points at
+   the public repo, <https://github.com/Forgehaven-Labs/reporadar> (made public
+   2026-07-01). The free funnel is `git clone` + `node bin/reporadar.js scan .`.
 
-   ```bash
-   sed -i '' 's|LEMONSQUEEZY_TEAM_CHECKOUT_URL|https://YOURSTORE.lemonsqueezy.com/checkout/buy/TEAM_UUID|g' landing/index.html
-   ```
+7. **Host the landing page**: it is fully static (`index.html` + `styles.css` +
+   `favicon.svg`). See `DEPLOY_RUNBOOK.md` for the 5-minute Cloudflare Pages steps.
+   Point `reporadar.dev` (the domain referenced in the copy) at it.
 
-9. **Host the landing page**: it is fully static (`index.html` + `styles.css` +
-   `favicon.svg`). Drop the `landing/` folder on Netlify, Cloudflare Pages, GitHub
-   Pages, or any static host. Point `reporadar.dev` (the domain referenced in the
-   copy and the free-edition banner) at it.
+8. **Test the full path**: use a Stripe **test-mode** Payment Link first (toggle test
+   mode, mirror the product, pay with `4242 4242 4242 4242`), confirm the redirect
+   and the zip download, unzip on a clean machine, run a scan. Then create the live
+   links and wire those in.
 
-10. **Test the full path**: use Lemon Squeezy **Test mode** to run a $0 test
-    order, confirm the zip downloads, unzip it on a clean machine, and run a scan.
-    Then flip to live.
+> **Gumroad backup (MoR):** if Stripe tax/compliance is more friction than wanted,
+> create the same two products on Gumroad (it is the Merchant of Record, handles
+> VAT, and hosts the file delivery natively). Same placeholders, same sed commands,
+> Gumroad product URLs instead. Cost: flat 10% vs Stripe ~2.9% + $0.30 (+ Stripe
+> Tax fee if enabled).
 
 ---
 
