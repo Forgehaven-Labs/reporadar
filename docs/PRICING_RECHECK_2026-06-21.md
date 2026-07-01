@@ -1,5 +1,11 @@
 # Pricing-Comp Recheck - RepoRadar (2026-06-21)
 
+> **UPDATE 2026-07-01: the Lemon Squeezy recommendation below is DEAD.** Lemon Squeezy
+> denied the store application on 2026-06-30. The rail is now **Stripe Payment Links**
+> (~2.9% + $0.30, NOT a Merchant of Record; enable Stripe Tax for VAT/sales tax) with
+> **Gumroad** (flat 10%, MoR included) as the backup if tax handling is a burden.
+> Prices and verdicts below are unchanged. See `../GO_TO_MARKET.md` Section 1.
+
 Recheck of live comparable prices against the current model. Researched via web search.
 This memo confirms or adjusts `../MONETIZATION.md`; it does not change prices on its own.
 

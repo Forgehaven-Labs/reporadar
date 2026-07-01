@@ -58,9 +58,9 @@ crippled-runtime freemium:
 
 | Tier | What the user gets | Where it lives |
 |---|---|---|
-| **Free** | The live terminal scan + the A-F grade for any repo. The "is this repo healthy?" answer, shareable. | The landing page hook + a published free `scan` path |
-| **Pro ($39)** | The full downloadable toolkit: HTML dashboard, JSON export, **portfolio mode**, and the **Claude Code fix-plan generator** — plus version updates. | The Lemon Squeezy download |
-| **Team / Agency ($149)** | Everything in Pro, plus a **commercial license** to scan client repos, **white-label HTML reports** (`--brand`), **up to 10 seats**, and priority support. | The Lemon Squeezy download (separate product) |
+| **Free** | The live terminal scan + the A-F grade for any repo. The "is this repo healthy?" answer, shareable. | The public repo, <https://github.com/Forgehaven-Labs/reporadar> (clone + scan) |
+| **Pro ($39)** | The full downloadable toolkit: HTML dashboard, JSON export, **portfolio mode**, and the **Claude Code fix-plan generator** — plus version updates. | The Stripe Payment Link download (Gumroad as MoR backup) |
+| **Team / Agency ($149)** | Everything in Pro, plus a **commercial license** to scan client repos, **white-label HTML reports** (`--brand`), **up to 10 seats**, and priority support. | The Stripe Payment Link download (separate link) |
 
 ### Why freemium beats flat-paid here
 

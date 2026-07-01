@@ -6,6 +6,17 @@ This project follows [Semantic Versioning](https://semver.org/) and the
 
 ## [Unreleased]
 
+### Changed
+- **Payment rail pivot (2026-07-01):** Lemon Squeezy denied the store application, so all
+  checkout placeholders and go-to-market docs moved to **Stripe Payment Links**
+  (`STRIPE_LINK_REPORADAR_PRO`, `STRIPE_LINK_REPORADAR_TEAM`), with Gumroad noted as the
+  merchant-of-record backup.
+- **Repo is now public** (2026-07-01, after a clean gitleaks + history scan): the landing
+  free-tier "Clone & scan" button points at
+  <https://github.com/Forgehaven-Labs/reporadar>. Free tier = clone + scan; no $0 checkout.
+- Added `docs/DECISIONS.md` (pre-committed day-30 kill line), `DEPLOY_RUNBOOK.md`
+  (Cloudflare Pages steps), and `RELEASE_MANIFEST.md` (artifact + sha256).
+
 ### Added
 - **`.reporadarignore`** (gitignore-style) so a repo can exclude vendored code or
   fixtures from the scan. Opt-in per repo, so default secret detection is unchanged.

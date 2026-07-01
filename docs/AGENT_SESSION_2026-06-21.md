@@ -1,5 +1,7 @@
 # Agent Session — RepoRadar — 2026-06-21
 
+> SUPERSEDED NOTE (2026-07-01): Lemon Squeezy references below are historical. LS denied the store application 2026-06-30; the rail is now Stripe Payment Links (see GO_TO_MARKET.md and docs/DECISIONS.md). The repo is now PUBLIC.
+
 Autonomous launch-prep pass. Branch: `feat/agent-2026-06-21-launch-prep` (off `feat/sellable-packaging`).
 
 ## What was done + verified
