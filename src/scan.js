@@ -153,6 +153,20 @@ function listSourceFiles(repo, limit = 4000) {
   return out;
 }
 
+// Gather the text of every Gradle build script in the repo — the root build file
+// AND module-level ones (e.g. app/build.gradle.kts in an Android multi-module
+// layout), plus any applied jacoco.gradle/kover.gradle helper scripts. JVM coverage
+// and lint wiring almost always lives in the MODULE build file, not the root, so
+// reading only the top-level build.gradle silently misses it. `files` is the
+// already-walked source list, so this adds no extra directory traversal.
+function readGradleBuildFiles(files) {
+  return files
+    .filter((f) => /\.gradle(\.kts)?$/i.test(basename(f)))
+    .map((f) => read(f))
+    .filter(Boolean)
+    .join('\n');
+}
+
 // Recognize a test file across the languages RepoRadar detects. The old check only
 // saw JS/Python `foo.test.js` / `test_foo.py` conventions, so Swift (`FooTests.swift`),
 // Kotlin/Java (`FooTest.kt`), .NET (`FooTests.cs`) and Go (`foo_test.go`) suites scored
@@ -196,10 +210,19 @@ function checkTests(repo, stack) {
   const fixes = [];
   let score = 0;
   const pkg = jsonOf(read(join(repo, 'package.json')));
-  const testDirs = ['test', 'tests', '__tests__', 'spec'];
-  const hasTestDir = testDirs.some((d) => existsSync(join(repo, d))) || existsSync(join(repo, 'src', 'test'));
   const files = listSourceFiles(repo);
+  const relPaths = files.map((f) => f.slice(repo.length).replace(/\\/g, '/'));
   const testFiles = files.filter((f) => isTestFile(basename(f)));
+  const testDirs = ['test', 'tests', '__tests__', 'spec'];
+  // JVM/Android layouts nest their suites under <module>/src/test/ or
+  // <module>/src/androidTest/ (e.g. app/src/test/kotlin/...), which a top-level
+  // dir check never sees. Treat any source file living under such a path as a
+  // test-directory signal so a Gradle module isn't scored as "no tests at all".
+  const hasNestedTestSrc = relPaths.some((p) => /\/src\/(test|androidTest)\//i.test(p));
+  const hasTestDir =
+    testDirs.some((d) => existsSync(join(repo, d))) ||
+    existsSync(join(repo, 'src', 'test')) ||
+    hasNestedTestSrc;
 
   if (pkg?.scripts?.test && !/no test specified/i.test(pkg.scripts.test)) {
     score += 40;
@@ -230,8 +253,12 @@ function checkTests(repo, stack) {
   const hasCoverageSignal =
     has(repo, 'coverage', '.nyc_output', '.codecov.yml', 'codecov.yml') ||
     pkg?.scripts?.coverage ||
-    /jacoco|-enableCodeCoverage|--cover|-cover\b/i.test(
-      [read(join(repo, 'build.gradle')), read(join(repo, 'build.gradle.kts'))].filter(Boolean).join('\n'),
+    // JVM coverage: the JaCoCo/Kover plugins, AGP's built-in unit-test coverage
+    // flags, or an applied jacoco.gradle/kover.gradle — read across ALL module
+    // build files, since the wiring normally sits in app/build.gradle(.kts), not
+    // the repo root (`enableUnitTestCoverage`/`testCoverageEnabled` are AGP's).
+    /jacoco|kover|enableUnitTestCoverage|testCoverageEnabled|-enableCodeCoverage|--cover|-cover\b/i.test(
+      readGradleBuildFiles(files),
     );
   if (hasCoverageSignal) {
     score += 15;
@@ -434,12 +461,32 @@ function checkBuildConfig(repo, stack) {
   const fixes = [];
   let score = 0;
   const pkg = jsonOf(read(join(repo, 'package.json')));
-  // Lint
-  if (has(repo, '.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', 'eslint.config.js', '.ruff.toml', 'ruff.toml', '.flake8', '.golangci.yml', '.golangci.yaml', '.swiftlint.yml', '.swiftformat', 'detekt.yml', 'detekt.yaml', '.rubocop.yml', '.stylelintrc', '.stylelintrc.json') || pkg?.eslintConfig) {
-    score += 45; findings.push({ level: 'ok', msg: 'Linter configured' });
+  // Lint — an explicit config file for any supported stack, OR (for Android Gradle
+  // projects) Android Lint, which every com.android.application/library module gets
+  // for free via `./gradlew lint` even with no separate config file. Detecting the
+  // AGP plugin stops Android apps from being marked "no linter" just because they
+  // carry no detekt/ktlint file. config/detekt/ and lint.xml are the conventional
+  // JVM spots; detekt/ktlint are the common Kotlin linters.
+  const hasExplicitLinter =
+    has(repo,
+      '.eslintrc', '.eslintrc.json', '.eslintrc.js', '.eslintrc.cjs', 'eslint.config.js',
+      '.ruff.toml', 'ruff.toml', '.flake8', '.golangci.yml', '.golangci.yaml',
+      '.swiftlint.yml', '.swiftformat',
+      'detekt.yml', 'detekt.yaml', 'config/detekt', '.ktlint', 'lint.xml', 'app/lint.xml',
+      '.rubocop.yml', '.stylelintrc', '.stylelintrc.json') ||
+    !!pkg?.eslintConfig;
+  const isGradle = has(repo, 'build.gradle', 'build.gradle.kts', 'settings.gradle', 'settings.gradle.kts');
+  const hasAndroidLint =
+    isGradle &&
+    /com\.android\.(?:application|library)|plugins\.android\.(?:application|library)|(?:^|\s)lint\s*\{/m.test(
+      readGradleBuildFiles(listSourceFiles(repo)),
+    );
+  if (hasExplicitLinter || hasAndroidLint) {
+    score += 45;
+    findings.push({ level: 'ok', msg: hasExplicitLinter ? 'Linter configured' : 'Android Lint (AGP built-in) available' });
   } else {
     findings.push({ level: 'warn', msg: 'No linter configuration' });
-    fixes.push('Add a linter config (eslint/ruff/swiftlint) to keep style consistent.');
+    fixes.push('Add a linter config (eslint/ruff/swiftlint/detekt) to keep style consistent.');
   }
   // Formatter / editorconfig
   if (has(repo, '.prettierrc', '.prettierrc.json', '.editorconfig', '.prettierrc.js')) { score += 20; findings.push({ level: 'ok', msg: 'Formatter/editorconfig present' }); }
