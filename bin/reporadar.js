@@ -30,14 +30,33 @@ Examples:
   reporadar portfolio ~/Documents/repos --html portfolio.html
 `;
 
+const VALUE_FLAGS = new Set(['html', 'json', 'claude', 'claude-dir', 'brand']);
+const BOOL_FLAGS = new Set(['verbose', 'help']);
+
 function parseArgs(argv) {
   const opts = { _: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--verbose') opts.verbose = true;
     else if (a === '-h' || a === '--help') opts.help = true;
-    else if (a.startsWith('--')) opts[a.slice(2)] = argv[++i];
-    else opts._.push(a);
+    else if (a.startsWith('--')) {
+      const key = a.slice(2);
+      if (VALUE_FLAGS.has(key)) {
+        const val = argv[i + 1];
+        if (val === undefined || val.startsWith('--')) {
+          console.error(`error: --${key} requires a value`);
+          process.exit(1);
+        }
+        opts[key] = val;
+        i++;
+      } else if (BOOL_FLAGS.has(key)) {
+        opts[key] = true;
+      } else {
+        console.error(`error: unknown option --${key}`);
+        console.log(HELP);
+        process.exit(1);
+      }
+    } else opts._.push(a);
   }
   return opts;
 }
@@ -96,7 +115,9 @@ function main() {
         write(join(opts['claude-dir'], r.name.replace(/[/\\]/g, '__') + '.md'), renderClaude(r));
       }
     }
-    process.exit(0);
+    // Honor the documented exit-code contract in portfolio mode too: a red repo in
+    // the set fails the gate, so `reporadar portfolio` can guard CI like `scan` does.
+    process.exit(results.some((r) => r.status === 'red') ? 2 : 0);
   }
 
   console.error(`error: unknown command "${cmd}"`);

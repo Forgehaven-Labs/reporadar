@@ -29,6 +29,15 @@ else
 fi
 
 NAME="reporadar"
+
+# --- gate on a green test suite before we build anything sellable ---
+# A build that ships broken tests or a regressed scanner is not shippable; run the
+# suite first so a red tree cannot produce a "verified" zip.
+echo "Running test suite before packaging..."
+node --test
+echo "  ok: test suite green."
+echo
+
 STAGE_PARENT="$(mktemp -d)"
 STAGE="$STAGE_PARENT/$NAME"
 DIST="$ROOT/dist"
@@ -50,7 +59,6 @@ INCLUDE=(
   "README.md"
   "CHANGELOG.md"
   "LICENSE"
-  "MONETIZATION.md"
   "package.json"
   "package-lock.json"
   ".reporadarignore"
@@ -123,15 +131,15 @@ echo
 echo "Smoke-testing the distributable..."
 VERIFY_DIR="$(mktemp -d)"
 ( cd "$VERIFY_DIR" && unzip -q "$ZIP" )
-if node "$VERIFY_DIR/$NAME/bin/reporadar.js" scan "$VERIFY_DIR/$NAME/demo/sample-repo" >/dev/null 2>&1; then
-  : # exit 2 is expected on the intentionally-red demo, so check explicitly below
-fi
+# The bundled demo is intentionally red (planted synthetic secrets), so a correct
+# packaged CLI MUST exit 2. Exit 0 would mean secret detection regressed to finding
+# nothing — that is a failed build, not a pass. Assert exactly 2.
 RR_EXIT=0
 node "$VERIFY_DIR/$NAME/bin/reporadar.js" scan "$VERIFY_DIR/$NAME/demo/sample-repo" >/dev/null 2>&1 || RR_EXIT=$?
-if [ "$RR_EXIT" -eq 2 ] || [ "$RR_EXIT" -eq 0 ]; then
-  echo "  ok: packaged CLI runs (demo scan exit=$RR_EXIT)."
+if [ "$RR_EXIT" -eq 2 ]; then
+  echo "  ok: packaged CLI runs and flags the demo red (exit=2)."
 else
-  echo "  FAIL: packaged CLI did not run cleanly (exit=$RR_EXIT)."
+  echo "  FAIL: packaged CLI expected exit 2 on the red demo, got exit=$RR_EXIT."
   rm -rf "$STAGE_PARENT" "$VERIFY_DIR"
   exit 1
 fi

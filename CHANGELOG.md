@@ -6,7 +6,33 @@ This project follows [Semantic Versioning](https://semver.org/) and the
 
 ## [Unreleased]
 
+### Security
+- **Arbitrary command execution when scanning an untrusted repo (P0, fixed 2026-07-02).**
+  RepoRadar shells out to `git` for the Git Hygiene signals, and `git` honored the
+  *scanned* repo's own `.git/config` — a planted `core.fsmonitor` / `core.hooksPath`
+  ran an attacker's command during `git status`, exactly the untrusted-code case the
+  tool is for. All git invocations now neutralize config-driven exec vectors on the
+  command line and refuse system/global config, with a bounded timeout/output. Added a
+  regression test that scans a repo with a hostile `core.fsmonitor` and asserts no
+  side effect. Found by running our own Overnight Audit service against RepoRadar.
+- **ReDoS via a hostile `.reporadarignore` (P2, fixed 2026-07-02).** Ignore globs from
+  the scanned repo were compiled straight into a backtracking `RegExp`; a crafted
+  pattern could pin the CPU and hang a scan (or a CI gate). Replaced with a linear,
+  non-backtracking matcher, plus pattern/path length and count caps.
+- **Terminal control-character injection (P3, fixed 2026-07-02).** Scanned-repo file
+  paths and `package.json` scripts flow into terminal output; a hostile repo could
+  embed ANSI/OSC escapes. Control bytes are now stripped from scanned-repo-derived
+  strings before printing.
+
 ### Added
+- **Multi-language test detection** (2026-07-02): Swift (`FooTests.swift`), Kotlin/Java
+  (`FooTest.kt`), .NET (`FooTests.cs`) and Go (`foo_test.go`) suites are now recognized,
+  and non-Node stacks get test-runner credit for their implicit runner (go test,
+  xcodebuild test, dotnet test, gradle/maven). Previously only JS/Python conventions
+  counted, so real suites across a mixed portfolio scored as zero tests. A `.md` spec
+  doc no longer miscounts as a test file. `.swiftformat`/detekt/ktlint/rubocop are now
+  recognized linter configs, and a Jenkinsfile delegating to a shared-library pipeline
+  (`iosPipeline()` etc.) is credited with running tests.
 - **Nested portfolio discovery** (2026-07-02): `portfolio` now finds git repos up to
   3 levels deep, so `product/{ios,android,website}` layouts are scanned. A container
   folder holding repos is no longer mis-scanned as one blob, and repo names in
@@ -16,6 +42,20 @@ This project follows [Semantic Versioning](https://semver.org/) and the
   discovered repo (`driftwink__ios.md`), so an agent fleet can fan out fixes.
 
 ### Fixed
+- **Committed-`.env` false negative** (2026-07-02): a `.env` that was both git-tracked
+  AND listed in `.gitignore` slipped past the check (the old logic trusted `.gitignore`
+  and missed the already-committed file). Now flags any git-tracked `.env` as a P0.
+- **`portfolio` exit code** (2026-07-02): honored the documented `2 = red` contract in
+  portfolio mode too, so `reporadar portfolio` can gate CI like `scan` does (was always 0).
+- **Terminal "Top fixes" ordering** (2026-07-02): P0/secret fixes now sort above yellows,
+  matching the fix plan — a coverage nice-to-have no longer outranks a secret rotation.
+- **CLI argument validation** (2026-07-02): a value flag with a missing value (`--html`
+  with nothing after it) now errors instead of silently swallowing the next flag or
+  writing a file literally named `--verbose`. Unknown flags are rejected.
+- **Packaging integrity** (2026-07-02): `package.sh` now gates on a green test suite before
+  building, asserts the packaged CLI exits exactly `2` on the red demo (exit 0 would mean
+  secret detection regressed), and no longer ships the internal `MONETIZATION.md` strategy
+  doc to customers. The Jenkins smoke stage no longer masks crashes with `|| true`.
 - **CI scoring parity** (2026-07-02): Jenkinsfile / GitLab / Circle configs now earn
   the same tests-in-CI credit as GitHub Actions — a Jenkinsfile running `node --test`
   scores 100, not a flat 70. The no-CI fix advice no longer prescribes GHA only.

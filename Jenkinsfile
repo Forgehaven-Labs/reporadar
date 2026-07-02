@@ -24,7 +24,9 @@ pipeline {
     stage('Smoke (self-scan)') {
       steps {
         // Sanity-check the CLI runs end to end against the bundled demo fixture.
-        sh 'node bin/reporadar.js scan demo/sample-repo --json out/ci-scan.json || true'
+        // The demo is intentionally red, so exit 2 is the PASS condition — assert it
+        // explicitly instead of `|| true`, which would also swallow a CLI crash (exit 1).
+        sh 'node bin/reporadar.js scan demo/sample-repo --json out/ci-scan.json; rc=$?; [ "$rc" -eq 2 ]'
       }
     }
   }
