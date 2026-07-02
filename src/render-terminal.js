@@ -8,6 +8,16 @@ const C = {
 const STATUS_COLOR = { green: C.green, yellow: C.yellow, red: C.red };
 const LEVEL_ICON = { ok: `${C.green}✓${C.reset}`, warn: `${C.yellow}▲${C.reset}`, bad: `${C.red}✗${C.reset}`, info: `${C.gray}•${C.reset}` };
 
+// Scanned-repo content (file paths, package.json scripts) flows into findings and
+// then to the operator's terminal. A hostile repo could embed ANSI/OSC escapes to
+// spoof output or manipulate the terminal. Strip C0/C1 control bytes (keeping \t)
+// from anything derived from the scanned repo before printing it.
+const CONTROL_CHARS = /[\x00-\x08\x0b-\x1f\x7f-\x9f]/g;
+function safe(s) { return String(s).replace(CONTROL_CHARS, ''); }
+
+// Rank a fix so P0/secret rotations sort above red-dimension fixes above yellows.
+function fixRank(fix) { return /\(P0\)|rotate|secret|\.env/i.test(fix) ? 0 : 1; }
+
 function bar(score, width = 20) {
   const filled = Math.round((score / 100) * width);
   const color = score >= 80 ? C.green : score >= 55 ? C.yellow : C.red;
@@ -27,17 +37,20 @@ export function renderTerminal(result, { verbose = false } = {}) {
     const dc = STATUS_COLOR[d.status];
     lines.push(`  ${pad(d.label, 20)} ${bar(d.score)} ${dc}${String(d.score).padStart(3)}${C.reset} ${C.gray}(w${d.weight})${C.reset}`);
     if (verbose) {
-      for (const f of d.findings) lines.push(`      ${LEVEL_ICON[f.level] || '•'} ${C.dim}${f.msg}${C.reset}`);
+      for (const f of d.findings) lines.push(`      ${LEVEL_ICON[f.level] || '•'} ${C.dim}${safe(f.msg)}${C.reset}`);
     } else {
       const bads = d.findings.filter((f) => f.level === 'bad');
-      for (const f of bads.slice(0, 2)) lines.push(`      ${LEVEL_ICON.bad} ${C.dim}${f.msg}${C.reset}`);
+      for (const f of bads.slice(0, 2)) lines.push(`      ${LEVEL_ICON.bad} ${C.dim}${safe(f.msg)}${C.reset}`);
     }
   }
   const allFixes = result.dimensions.flatMap((d) => d.fixes);
   if (allFixes.length) {
+    // Sort P0/secret fixes first so the terminal's "Top fixes" matches the fix plan's
+    // priority — a coverage nice-to-have must never rank above a secret rotation.
+    const ranked = [...allFixes].sort((a, b) => fixRank(a) - fixRank(b));
     lines.push('');
     lines.push(`  ${C.bold}Top fixes${C.reset} ${C.gray}(${allFixes.length} total)${C.reset}`);
-    for (const fix of allFixes.slice(0, 5)) lines.push(`    ${C.yellow}→${C.reset} ${fix}`);
+    for (const fix of ranked.slice(0, 5)) lines.push(`    ${C.yellow}→${C.reset} ${safe(fix)}`);
   }
   lines.push('');
   return lines.join('\n');
