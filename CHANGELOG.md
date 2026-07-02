@@ -6,6 +6,24 @@ This project follows [Semantic Versioning](https://semver.org/) and the
 
 ## [Unreleased]
 
+### Added
+- **Nested portfolio discovery** (2026-07-02): `portfolio` now finds git repos up to
+  3 levels deep, so `product/{ios,android,website}` layouts are scanned. A container
+  folder holding repos is no longer mis-scanned as one blob, and repo names in
+  portfolio output are root-relative (`driftwink/ios` vs `drivelog/ios`). Found by
+  dogfooding: the old direct-children scan saw 12 of our own portfolio's 42 repos.
+- **`--claude-dir <dir>`** in portfolio mode: writes one Claude Code fix plan per
+  discovered repo (`driftwink__ios.md`), so an agent fleet can fan out fixes.
+
+### Fixed
+- **CI scoring parity** (2026-07-02): Jenkinsfile / GitLab / Circle configs now earn
+  the same tests-in-CI credit as GitHub Actions — a Jenkinsfile running `node --test`
+  scores 100, not a flat 70. The no-CI fix advice no longer prescribes GHA only.
+- **Zero-dependency fairness**: a Node repo with no declared dependencies is no longer
+  told to commit a lockfile for packages it doesn't have; zero deps now scores as the
+  supply-chain win it is. (RepoRadar's own pitch is "zero dependencies" — its scanner
+  was docking itself for it.)
+
 ### Changed
 - **Payment rail pivot (2026-07-01):** Lemon Squeezy denied the store application, so all
   checkout placeholders and go-to-market docs moved to **Stripe Payment Links**

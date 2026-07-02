@@ -51,8 +51,9 @@ reporadar scan ./my-app
 # Scan + write a dashboard + a Claude fix plan
 reporadar scan ./my-app --html report.html --claude FIXES.md --json report.json
 
-# Scan every repo inside a folder, ranked worst-first
-reporadar portfolio ~/Documents/repos --html portfolio.html
+# Scan every repo inside a folder (nested up to 3 levels deep), ranked worst-first,
+# with one Claude fix plan per repo for an agent fleet to work through
+reporadar portfolio ~/Documents/repos --html portfolio.html --claude-dir fixplans/
 
 # See every finding, not just the criticals
 reporadar scan . --verbose
