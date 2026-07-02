@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage",
     "demo": "node bin/reporadar.js scan demo/sample-repo --html out/demo.html --json out/demo.json --claude out/demo-fixes.md",
     "start": "node bin/reporadar.js"
   },
