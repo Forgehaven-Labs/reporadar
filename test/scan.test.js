@@ -67,6 +67,74 @@ test('without .reporadarignore the same fixture secret is still flagged (detecti
   rmSync(dir, { recursive: true, force: true });
 });
 
+// --- Secret detector precision: config-key NAME constants must not false-positive ---
+// The `keyword = "value"` credential pattern used to fire on production config-key
+// constants whose VALUE is itself an identifier or env-var name. These real shapes
+// surfaced in the 2026-07-02 dogfooding pass (cairo/cli, title-sentinel, trading-desk)
+// and dragged those repos to Security = red on non-secrets. They must clear WITHOUT
+// weakening real-secret detection (positive tests below prove sensitivity is intact).
+function secretsOf(files) {
+  const dir = makeRepo({ 'package.json': '{"name":"x"}', ...files });
+  const sec = scanRepo(dir).dimensions.find((d) => d.key === 'secrets');
+  rmSync(dir, { recursive: true, force: true });
+  return sec;
+}
+
+test('config-key NAME constants (identifier-valued) do not false-positive as secrets', () => {
+  const sec = secretsOf({
+    // Go — KeyLLMAPIKey = "llm_api_key" (cairo/cli/internal/db/config_keys.go)
+    'internal/db/config_keys.go': 'const (\n\tKeyLLMAPIKey = "llm_api_key"\n\tKeyServerToken = "server_token"\n)\n',
+    // Python — ENV_TOKEN = "TRADIER_TOKEN" (trading-desk adapters)
+    'adapters/tradier_sandbox.py': 'ENV_TOKEN = "TRADIER_TOKEN"\nLIVE_TOKEN = "live_token"\n',
+    // C# — Password = "password" (title-sentinel AuthProvider enum-name constant)
+    'src/AuthProvider.cs': 'public const string Password = "password";\n',
+    // header-name constant whose value is the X-App-Token header name
+    'config/headers.yaml': 'token: "X-App-Token"\n',
+  });
+  assert.equal(sec.status, 'green', `NAME constants must not flag; findings: ${JSON.stringify(sec.findings)}`);
+  assert.ok(!sec.findings.some((f) => /Hardcoded credential/.test(f.msg)), 'no hardcoded-credential finding for NAME constants');
+});
+
+test('SCREAMING_SNAKE env-var name value (ALPACA_API_SECRET_KEY) is not a secret', () => {
+  const sec = secretsOf({ 'adapters/alpaca.py': 'SECRET = "ALPACA_API_SECRET_KEY"\n' });
+  assert.equal(sec.status, 'green');
+});
+
+test('env-var references and placeholders in config are not treated as secrets', () => {
+  const sec = secretsOf({
+    'config.example.yaml': 'api_key: "env:CAIRO_MODEL_API_KEY"\n',            // cairo-kb
+    'deploy/roles.sh': 'password="${OWNER_PW}"\napp_password="${APP_PW}"\n',   // cairo-kb bootstrap
+    'docs/PACKAGING.md': 'PASSWORD="<password>"\n',                            // trading-desk placeholder
+    'scripts/win.bat': 'token = "%API_TOKEN%"\n',                             // Windows env ref
+  });
+  assert.equal(sec.status, 'green', `refs/placeholders must not flag; findings: ${JSON.stringify(sec.findings)}`);
+});
+
+// --- Sensitivity guard: real keys and weak literal passwords must STILL flag red ---
+test('real secrets and weak literal passwords are still flagged red', () => {
+  for (const [name, file, content] of [
+    ['OpenAI-style key', 'a.js', 'const k = "sk-a1B2c3D4e5F6g7H8i9J0k";'],
+    ['AWS access key', 'b.js', 'const k = "AKIAABCDEFGHIJKLMNOP";'],
+    ['high-entropy api_key value', 'c.js', 'const api_key = "xQ92mVnp0Zktr8LmWs4Ej7";'],
+    ['weak literal password (has digits)', 'd.py', 'password = "password123"'],
+    ['mixed-class literal credential', 'e.cs', 'const string Password = "TestPass1!";'],
+  ]) {
+    const sec = secretsOf({ [file]: content });
+    assert.equal(sec.status, 'red', `${name} must still be flagged red`);
+    assert.ok(sec.fixes.some((f) => /P0/.test(f)), `${name} should yield a P0 remediation fix`);
+  }
+});
+
+test('shell default-password expansion ${VAR:-default} still flags (cairo-kb demo-up.sh)', () => {
+  // The embedded literal default (cairo-demo) IS a hardcoded password; the sibling
+  // bare reference $PG_PASSWORD is inert. The file must still flag on the former.
+  const sec = secretsOf({
+    'scripts/demo-up.sh': 'PG_PASSWORD="${CAIRO_DEMO_PG_PASSWORD:-cairo-demo}"\nDB="$PG_PASSWORD"\n',
+  });
+  assert.equal(sec.status, 'red', 'a hardcoded default password inside ${VAR:-default} must still flag');
+  assert.ok(sec.findings.some((f) => /Hardcoded credential/.test(f.msg)));
+});
+
 test('scanRepo rewards a well-formed repo', () => {
   const longReadme = '# Project\n\n' + '## Install\nrun it.\n## Usage\n' + 'x'.repeat(1600);
   const dir = makeRepo({
