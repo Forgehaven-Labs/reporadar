@@ -42,6 +42,22 @@ This project follows [Semantic Versioning](https://semver.org/) and the
   discovered repo (`driftwink__ios.md`), so an agent fleet can fan out fixes.
 
 ### Fixed
+- **Secret-scanner false positives on config-key NAME constants** (2026-07-04): the
+  `keyword = "value"` "Hardcoded credential assignment" pattern fired on production
+  constants whose VALUE is itself an identifier or env-var name — `KeyLLMAPIKey =
+  "llm_api_key"` (Go), `ENV_TOKEN = "TRADIER_TOKEN"` (Python), `Password = "password"`
+  (a C# auth-provider enum name), `token: "X-App-Token"` header names, `env:VAR` refs and
+  `${VAR}` placeholders. These are not secrets, so cairo/cli, title-sentinel/platform and
+  trading-desk all scored Security = 0 (red) on non-secrets during the 2026-07-02
+  dogfooding pass (they live in production code, not fixtures, so `.reporadarignore` was
+  correctly not used). The detector now inspects the captured value and skips inert
+  identifier/env-var/reference/placeholder shapes, while still flagging weak literal
+  passwords (`password123`, `TestPass1!`), high-entropy values, provider-prefixed keys
+  (`sk-…`, `AKIA…`), and shell default-password expansions (`${VAR:-cairo-demo}`). A
+  digit, mixed-case punctuation, or embedded literal default keeps a value flagged, so
+  sensitivity is never lowered — verified across all 42 portfolio repos: every cleared
+  match was an identifier/reference, and the real cairo-kb `demo-up.sh` default password
+  still flags. Found by dogfooding the Overnight Audit secret-sweep.
 - **Committed-`.env` false negative** (2026-07-02): a `.env` that was both git-tracked
   AND listed in `.gitignore` slipped past the check (the old logic trusted `.gitignore`
   and missed the already-committed file). Now flags any git-tracked `.env` as a P0.

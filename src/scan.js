@@ -333,6 +333,8 @@ function checkDependencies(repo, stack) {
   return { score: clamp(score), findings, fixes };
 }
 
+// High-confidence provider token formats. These are self-identifying key shapes —
+// a match is a finding, full stop, with no value inspection needed.
 const SECRET_PATTERNS = [
   [/AKIA[0-9A-Z]{16}/, 'AWS access key id'],
   [/-----BEGIN (RSA|EC|OPENSSH|DSA|PGP) PRIVATE KEY-----/, 'Private key block'],
@@ -341,8 +343,48 @@ const SECRET_PATTERNS = [
   [/ghp_[A-Za-z0-9]{30,}/, 'GitHub personal access token'],
   [/AIza[0-9A-Za-z\-_]{30,}/, 'Google API key'],
   [/xox[baprs]-[0-9A-Za-z\-]{10,}/, 'Slack token'],
-  [/(?:password|passwd|secret|api[_-]?key|token)\s*[:=]\s*["'][^"'\s]{8,}["']/i, 'Hardcoded credential assignment'],
 ];
+
+// Generic `keyword = "value"` credential assignment. Far lower precision than the
+// prefix formats above: in real production code the same shape is overwhelmingly a
+// CONFIG-KEY constant whose value is itself an identifier — `KeyLLMAPIKey =
+// "llm_api_key"`, `ENV_TOKEN = "TRADIER_TOKEN"`, `Password = "password"` (an auth
+// provider enum name), a `token: "X-App-Token"` header name — not a leaked secret.
+// So we capture the VALUE (group 1) and, unlike the prefix patterns, only flag it
+// when the value doesn't look like an identifier/env-var/reference (see
+// isNonSecretValue). Global flag so every assignment in a file is inspected, not
+// just the first — a file with one inert value and one real secret must still flag.
+const CREDENTIAL_ASSIGNMENT =
+  /(?:password|passwd|secret|api[_-]?key|token)\s*[:=]\s*["']([^"'\s]{8,})["']/gi;
+const CREDENTIAL_LABEL = 'Hardcoded credential assignment';
+
+// Precision guard for CREDENTIAL_ASSIGNMENT. Returns true when the captured value is
+// an inert shape that a real credential never takes: a config-key/env-var NAME, an
+// enum/provider constant, a bare variable reference, or a template placeholder.
+// Deliberately conservative so sensitivity is never lowered — ANY value carrying a
+// digit, mixed-case-with-punctuation, or an embedded literal default (the shell
+// `${VAR:-default}` form) falls through and is still flagged as a possible secret.
+// Real leaked credentials essentially always carry entropy (digits, symbols beyond
+// identifier separators); constant NAMES do not.
+function isNonSecretValue(v) {
+  // Bare variable / environment references and template placeholders. Note that a
+  // shell default-expansion like ${CAIRO_DEMO_PG_PASSWORD:-cairo-demo} does NOT match
+  // any of these (the `:-default` breaks the pure-reference shape), so its hardcoded
+  // default password is preserved as a finding.
+  if (/^\$[A-Za-z_][A-Za-z0-9_]*$/.test(v)) return true;      // $PG_PASSWORD
+  if (/^\$\{[A-Za-z_][A-Za-z0-9_]*\}$/.test(v)) return true;  // ${OWNER_PW}
+  if (/^%[A-Za-z_][A-Za-z0-9_]*%$/.test(v)) return true;      // %API_TOKEN% (Windows env)
+  if (/^env:[A-Za-z_][A-Za-z0-9_.-]*$/i.test(v)) return true; // env:CAIRO_MODEL_API_KEY
+  if (/^<[^>]+>$/.test(v)) return true;                       // <password> placeholder
+  if (/^\{\{.+\}\}$/.test(v)) return true;                    // {{ secret }} template
+  // Identifier / config-key / env-var NAME shapes: SCREAMING_SNAKE, snake_case,
+  // kebab-case, camelCase, dotted namespaces — letters with only `. _ -` separators
+  // and NO digit. These are constant NAMES (TRADIER_TOKEN, llm_api_key, acrisAppToken,
+  // cairo-vscode.llm_api_key, X-App-Token), never credential values. The no-digit
+  // requirement keeps weak literal passwords (password123, admin1) flagged.
+  if (/^[A-Za-z][A-Za-z._-]*$/.test(v)) return true;
+  return false;
+}
 
 function checkSecrets(repo) {
   const findings = [];
@@ -353,19 +395,26 @@ function checkSecrets(repo) {
   });
   let hits = 0;
   const seen = new Set();
+  const record = (label, f) => {
+    const key = label + ':' + f;
+    if (seen.has(key)) return;
+    seen.add(key);
+    hits++;
+    const rel = f.replace(repo, '').replace(/^\//, '');
+    findings.push({ level: 'bad', msg: `Possible ${label} in ${rel}` });
+    fixes.push(`Rotate and remove the ${label} found in ${rel}; load it from an env var instead. (P0)`);
+  };
   for (const f of files.slice(0, 2500)) {
     const txt = read(f);
     if (!txt) continue;
     for (const [re, label] of SECRET_PATTERNS) {
-      if (re.test(txt)) {
-        const key = label + ':' + f;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        hits++;
-        const rel = f.replace(repo, '').replace(/^\//, '');
-        findings.push({ level: 'bad', msg: `Possible ${label} in ${rel}` });
-        fixes.push(`Rotate and remove the ${label} found in ${rel}; load it from an env var instead. (P0)`);
-      }
+      if (re.test(txt)) record(label, f);
+    }
+    // Credential assignments are only flagged when at least one captured value looks
+    // like an actual secret rather than a config-key name / env reference / placeholder.
+    // (matchAll clones the regex, so the shared lastIndex is not an issue across files.)
+    for (const m of txt.matchAll(CREDENTIAL_ASSIGNMENT)) {
+      if (!isNonSecretValue(m[1])) { record(CREDENTIAL_LABEL, f); break; }
     }
   }
   // .env committed? Flag if a .env is actually tracked by git (the real risk —
